@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { units, allWords } from '../data/vocabulary';
+import { maskWord } from '../data/vocab';
+import { useBook, useSelectedBook } from '../hooks/useBook';
+import BookPicker from '../components/BookPicker';
 import { speak, speechSupported } from '../utils/speech';
 
 const MODES = [
@@ -18,35 +20,44 @@ function shuffle(arr) {
   return a;
 }
 
-// Sinh danh sách câu hỏi từ nguồn từ đã chọn, mỗi câu 4 lựa chọn (trừ mode điền từ).
-function buildQuestions(pool, mode, count) {
+// Sinh câu hỏi từ phạm vi đã chọn; phương án nhiễu lấy trong cùng cuốn sách.
+function buildQuestions(pool, bookWords, mode, count) {
   const picked = shuffle(pool).slice(0, count);
   return picked.map((w) => {
-    const distractors = shuffle(allWords.filter((x) => x.id !== w.id))
-      .filter((x) => (mode === 'word2def' ? x.definition : x.word))
-      .slice(0, 3);
-    const options = shuffle([w, ...distractors]);
-    return { word: w, options };
+    const distractors = shuffle(bookWords.filter((x) => x.id !== w.id && x.word !== w.word)).slice(0, 3);
+    return { word: w, options: shuffle([w, ...distractors]) };
   });
 }
 
+const normalize = (s) => s.trim().toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ');
+
 export default function PracticePage({ progress }) {
   const { addQuizResult } = progress;
-  const [scope, setScope] = useState('1'); // số unit hoặc 'all'
+  const [book, setBook] = useSelectedBook();
+  const { units, loading } = useBook(book);
+  const [scope, setScope] = useState('1'); // số unit hoặc 'all' (cả cuốn)
   const [mode, setMode] = useState('word2def');
   const [count, setCount] = useState(10);
   const [quiz, setQuiz] = useState(null);
 
+  const bookWords = useMemo(() => (units || []).flatMap((u) => u.words), [units]);
   const pool = useMemo(() => {
-    if (scope === 'all') return allWords;
-    return units.find((u) => u.unit === Number(scope))?.words.map((w) => ({ ...w, unit: Number(scope) })) || [];
-  }, [scope]);
+    if (scope === 'all') return bookWords;
+    return units?.find((u) => u.unit === Number(scope))?.words || [];
+  }, [scope, units, bookWords]);
+
+  const changeBook = (id) => {
+    setBook(id);
+    setScope('1');
+  };
 
   const start = () => {
     const n = Math.min(count, pool.length);
     setQuiz({
       mode,
-      questions: buildQuestions(pool, mode, n),
+      book,
+      scopeLabel: scope === 'all' ? `Book ${book}` : `Book ${book} · Unit ${scope}`,
+      questions: buildQuestions(pool, bookWords, mode, n),
       current: 0,
       answers: [],
       finished: false,
@@ -57,17 +68,21 @@ export default function PracticePage({ progress }) {
     return (
       <div className="page">
         <div className="page__head">
-          <h2>Bài tập</h2>
-          <p className="muted">Chọn phạm vi, dạng bài và số câu để bắt đầu.</p>
+          <h2>Bài tập từ vựng</h2>
+          <p className="muted">Chọn cuốn sách, phạm vi, dạng bài và số câu để bắt đầu.</p>
         </div>
+
+        <BookPicker value={book} onChange={changeBook} />
 
         <div className="setup">
           <label className="field">
             <span>Phạm vi</span>
             <select className="input" value={scope} onChange={(e) => setScope(e.target.value)}>
-              <option value="all">Tất cả 30 unit (600 từ)</option>
-              {units.map((u) => (
-                <option key={u.unit} value={String(u.unit)}>Unit {u.unit}</option>
+              <option value="all">Cả Book {book} (600 từ)</option>
+              {(units || []).map((u) => (
+                <option key={u.unit} value={String(u.unit)}>
+                  Unit {u.unit}
+                </option>
               ))}
             </select>
           </label>
@@ -75,8 +90,10 @@ export default function PracticePage({ progress }) {
           <label className="field">
             <span>Số câu</span>
             <select className="input" value={count} onChange={(e) => setCount(Number(e.target.value))}>
-              {[5, 10, 15, 20].map((n) => (
-                <option key={n} value={n}>{n} câu</option>
+              {[5, 10, 15, 20, 30].map((n) => (
+                <option key={n} value={n}>
+                  {n} câu
+                </option>
               ))}
             </select>
           </label>
@@ -100,8 +117,8 @@ export default function PracticePage({ progress }) {
           })}
         </div>
 
-        <button className="btn btn--primary btn--lg" onClick={start} disabled={pool.length === 0}>
-          Bắt đầu · {Math.min(count, pool.length)} câu
+        <button className="btn btn--primary btn--lg" onClick={start} disabled={loading || pool.length === 0}>
+          {loading ? 'Đang tải…' : `Bắt đầu · ${Math.min(count, pool.length)} câu`}
         </button>
       </div>
     );
@@ -119,20 +136,14 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
   const isFill = quiz.mode === 'fill';
   const total = quiz.questions.length;
 
+  // Khi đề bài là định nghĩa, che từ cần đoán để không lộ đáp án.
   const promptText =
-    quiz.mode === 'word2def' ? q.word.word :
-    quiz.mode === 'listen' ? '🔊' :
-    q.word.definition;
+    quiz.mode === 'word2def' ? q.word.word : quiz.mode === 'listen' ? '🔊' : maskWord(q.word.definition, q.word.word);
 
   const optionText = (o) => (quiz.mode === 'word2def' ? o.definition : o.word);
 
   const submit = () => {
-    let correct;
-    if (isFill) {
-      correct = typed.trim().toLowerCase() === q.word.word.toLowerCase();
-    } else {
-      correct = selected && selected.id === q.word.id;
-    }
+    const correct = isFill ? normalize(typed) === normalize(q.word.word) : selected && selected.id === q.word.id;
     setChecked(true);
     setQuiz((s) => ({ ...s, answers: [...s.answers, { word: q.word, correct, given: isFill ? typed : selected }] }));
   };
@@ -143,7 +154,7 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
     setTyped('');
     if (quiz.current + 1 >= total) {
       const score = quiz.answers.filter((a) => a.correct).length;
-      const label = MODES.find((m) => m.id === quiz.mode)?.label || 'Bài tập';
+      const label = `${MODES.find((m) => m.id === quiz.mode)?.label || 'Bài tập'} · ${quiz.scopeLabel}`;
       onDone({ label, score, total });
       setQuiz((s) => ({ ...s, finished: true }));
     } else {
@@ -160,7 +171,10 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
           <div className={'result__ring' + (pct >= 80 ? ' good' : pct >= 50 ? ' ok' : ' bad')}>
             <span>{pct}%</span>
           </div>
-          <h2>Bạn đúng {score}/{total} câu</h2>
+          <h2>
+            Bạn đúng {score}/{total} câu
+          </h2>
+          <p className="muted">{quiz.scopeLabel}</p>
           <div className="review">
             {quiz.answers.map((a, i) => (
               <div key={i} className={'review__row ' + (a.correct ? 'ok' : 'bad')}>
@@ -171,7 +185,9 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
             ))}
           </div>
           <div className="flash-actions">
-            <button className="btn btn--primary" onClick={onExit}>Làm bài khác</button>
+            <button className="btn btn--primary" onClick={onExit}>
+              Làm bài khác
+            </button>
           </div>
         </div>
       </div>
@@ -183,11 +199,15 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
   return (
     <div className="page">
       <div className="quiz-top">
-        <button className="btn btn--ghost" onClick={onExit}>← Thoát</button>
+        <button className="btn btn--ghost" onClick={onExit}>
+          ← Thoát
+        </button>
         <div className="quiz-progress">
           <div className="quiz-progress__fill" style={{ width: `${(quiz.current / total) * 100}%` }} />
         </div>
-        <span className="muted">{quiz.current + 1}/{total}</span>
+        <span className="muted">
+          {quiz.current + 1}/{total}
+        </span>
       </div>
 
       <div className="quiz-card">
@@ -199,7 +219,9 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
         </p>
 
         {quiz.mode === 'listen' ? (
-          <button className="btn btn--lg" onClick={() => speak(q.word.word)}>🔊 Nghe lại</button>
+          <button className="btn btn--lg" onClick={() => speak(q.word.word)}>
+            🔊 Nghe lại
+          </button>
         ) : (
           <p className="quiz-prompt">{promptText}</p>
         )}
@@ -211,19 +233,21 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
               if (!checked && canSubmit) submit();
             }}
           >
+            {q.word.example && <p className="quiz-hint">Ví dụ: “{maskWord(q.word.example, q.word.word)}”</p>}
             <input
               className="input input--lg"
               autoFocus
               value={typed}
               disabled={checked}
               placeholder="Nhập từ…"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               onChange={(e) => setTyped(e.target.value)}
             />
             {checked && (
               <p className={'fill-feedback ' + (quiz.answers.at(-1)?.correct ? 'ok' : 'bad')}>
-                {quiz.answers.at(-1)?.correct
-                  ? '✓ Chính xác!'
-                  : `✗ Đáp án đúng: ${q.word.word}`}
+                {quiz.answers.at(-1)?.correct ? '✓ Chính xác!' : `✗ Đáp án đúng: ${q.word.word}`}
               </p>
             )}
           </form>
@@ -238,12 +262,7 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
                 cls += ' is-selected';
               }
               return (
-                <button
-                  key={o.id}
-                  className={cls}
-                  disabled={checked}
-                  onClick={() => setSelected(o)}
-                >
+                <button key={o.id} className={cls} disabled={checked} onClick={() => setSelected(o)}>
                   {optionText(o)}
                 </button>
               );

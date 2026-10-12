@@ -1,33 +1,51 @@
-import { useMemo, useState } from 'react';
-import { units, allWords } from '../data/vocabulary';
+import { useEffect, useMemo, useState } from 'react';
+import { loadAllBooks, totalWordsAll } from '../data/vocab';
+import { useBook, useSelectedBook } from '../hooks/useBook';
 import VocabCard from '../components/VocabCard';
+import BookPicker from '../components/BookPicker';
 
 export default function VocabularyPage({ progress }) {
   const { isLearned, toggleLearned } = progress;
+  const [book, setBook] = useSelectedBook();
+  const { units, loading, error } = useBook(book);
   const [unit, setUnit] = useState(1);
   const [query, setQuery] = useState('');
   const [onlyUnlearned, setOnlyUnlearned] = useState(false);
+  const [allWords, setAllWords] = useState(null);
 
   const q = query.trim().toLowerCase();
 
+  // Chỉ tải toàn bộ 6 cuốn khi người dùng bắt đầu tìm kiếm.
+  useEffect(() => {
+    if (q && !allWords) loadAllBooks().then(setAllWords).catch(() => setAllWords([]));
+  }, [q, allWords]);
+
+  const changeBook = (id) => {
+    setBook(id);
+    setUnit(1);
+  };
+
   const list = useMemo(() => {
-    const base = q
-      ? allWords // khi tìm kiếm thì tìm trên toàn bộ từ
-      : units.find((u) => u.unit === unit)?.words.map((w) => ({ ...w, unit })) || [];
+    const base = q ? allWords || [] : units?.find((u) => u.unit === unit)?.words || [];
     return base.filter((w) => {
-      if (q && !(w.word.toLowerCase().includes(q) || w.definition.toLowerCase().includes(q)))
-        return false;
+      if (q && !(w.word.toLowerCase().includes(q) || w.definition.toLowerCase().includes(q))) return false;
       if (onlyUnlearned && isLearned(w.id)) return false;
       return true;
     });
-  }, [q, unit, onlyUnlearned, isLearned]);
+  }, [q, allWords, units, unit, onlyUnlearned, isLearned]);
+
+  const searching = q && !allWords;
 
   return (
     <div className="page">
       <div className="page__head">
         <h2>Từ vựng</h2>
         <p className="muted">
-          {q ? `Kết quả tìm kiếm: ${list.length} từ` : `Unit ${unit} · ${list.length} từ`}
+          {q
+            ? searching
+              ? 'Đang tìm…'
+              : `Kết quả tìm kiếm trong ${totalWordsAll} từ: ${list.length}`
+            : `Book ${book} · Unit ${unit} · ${list.length} từ`}
         </p>
       </div>
 
@@ -35,45 +53,45 @@ export default function VocabularyPage({ progress }) {
         <input
           className="input"
           type="search"
-          placeholder="Tìm từ hoặc nghĩa (toàn bộ 600 từ)…"
+          placeholder={`Tìm từ hoặc nghĩa (cả 6 cuốn, ${totalWordsAll} từ)…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <label className="check">
-          <input
-            type="checkbox"
-            checked={onlyUnlearned}
-            onChange={(e) => setOnlyUnlearned(e.target.checked)}
-          />
+          <input type="checkbox" checked={onlyUnlearned} onChange={(e) => setOnlyUnlearned(e.target.checked)} />
           Chỉ hiện từ chưa thuộc
         </label>
       </div>
 
       {!q && (
-        <div className="unit-tabs">
-          {units.map((u) => (
-            <button
-              key={u.unit}
-              className={'unit-tab' + (u.unit === unit ? ' is-active' : '')}
-              onClick={() => setUnit(u.unit)}
-            >
-              {u.unit}
-            </button>
-          ))}
-        </div>
+        <>
+          <BookPicker value={book} onChange={changeBook} />
+          {units && (
+            <div className="unit-tabs">
+              {units.map((u) => (
+                <button
+                  key={u.unit}
+                  className={'unit-tab' + (u.unit === unit ? ' is-active' : '')}
+                  onClick={() => setUnit(u.unit)}
+                >
+                  {u.unit}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {list.length === 0 ? (
+      {error ? (
+        <p className="empty">Không tải được dữ liệu. Hãy thử tải lại trang.</p>
+      ) : (!q && loading) || searching ? (
+        <p className="empty">Đang tải…</p>
+      ) : list.length === 0 ? (
         <p className="empty">Không có từ nào phù hợp.</p>
       ) : (
         <div className="card-grid">
           {list.map((w) => (
-            <VocabCard
-              key={w.id}
-              item={w}
-              learned={isLearned(w.id)}
-              onToggle={toggleLearned}
-            />
+            <VocabCard key={w.id} item={w} learned={isLearned(w.id)} onToggle={toggleLearned} showSource={!!q} />
           ))}
         </div>
       )}

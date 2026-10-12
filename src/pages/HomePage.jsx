@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { totalUnits, totalWords } from '../data/vocabulary';
+import { books, totalWordsAll as totalWords } from '../data/vocab';
 import { totalGrammarUnits } from '../data/grammar';
 
 export default function HomePage({ progress }) {
@@ -13,7 +13,7 @@ export default function HomePage({ progress }) {
       <section className="hero">
         <h1 className="hero__title">Ôn tập tiếng Anh</h1>
         <p className="hero__sub">
-          {totalWords} từ vựng thiết yếu ({totalUnits} unit) và {totalGrammarUnits} chủ điểm ngữ pháp cơ bản — học
+          {totalWords} từ vựng thiết yếu ({books.length} cuốn · {books.length * 30} unit) và {totalGrammarUnits} chủ điểm ngữ pháp cơ bản — học
           lý thuyết, luyện bài tập ngay trên trình duyệt.
         </p>
         <div className="hero__cta">
@@ -61,7 +61,7 @@ export default function HomePage({ progress }) {
         <Link to="/vocabulary" className="feature">
           <div className="feature__icon">📚</div>
           <h3>Từ vựng</h3>
-          <p>Duyệt theo unit, tìm kiếm, nghe phát âm và đánh dấu từ đã thuộc.</p>
+          <p>6 cuốn 4000 Essential English Words: duyệt theo unit, tìm kiếm, nghe phát âm, đánh dấu từ đã thuộc.</p>
         </Link>
         <Link to="/flashcards" className="feature">
           <div className="feature__icon">🔁</div>

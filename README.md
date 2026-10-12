@@ -1,13 +1,13 @@
 # Ôn tập tiếng Anh – Từ vựng & Ngữ pháp
 
-Ứng dụng web ôn tập **600 từ vựng** (*4000 Essential English Words – Book 1*, Paul Nation) và **115 chủ điểm ngữ pháp** cơ bản (theo giáo trình *Essential Grammar in Use*, Raymond Murphy). Xây bằng **React + Vite**, dữ liệu **tĩnh** (không cần backend).
+Ứng dụng web ôn tập **3.600 từ vựng** (*4000 Essential English Words*, Book 1–6, Paul Nation) và **115 chủ điểm ngữ pháp** cơ bản (theo giáo trình *Essential Grammar in Use*, Raymond Murphy). Xây bằng **React + Vite**, dữ liệu **tĩnh** (không cần backend).
 
 ## Tính năng
 
 ### Từ vựng
-- **📚 Từ vựng** — duyệt theo 30 unit, tìm kiếm trên toàn bộ 600 từ, nghe phát âm (Web Speech API), đánh dấu từ đã thuộc.
+- **📚 Từ vựng** — 6 cuốn × 30 unit × 20 từ; chọn cuốn và unit, tìm kiếm trên toàn bộ 3.600 từ, nghe phát âm (Web Speech API), đánh dấu từ đã thuộc.
 - **🔁 Flashcard** — lật thẻ tự kiểm tra (từ → nghĩa hoặc nghĩa → từ), xáo trộn, điều hướng bằng phím mũi tên.
-- **📝 Bài tập** — 4 dạng: chọn nghĩa đúng, chọn từ đúng, điền từ, nghe & chọn.
+- **📝 Bài tập** — 4 dạng: chọn nghĩa đúng, chọn từ đúng, điền từ, nghe & chọn; phạm vi theo unit hoặc cả cuốn. Từ cần đoán được che trong đề bài để không lộ đáp án.
 
 ### Ngữ pháp
 - **📐 115 chủ điểm** chia 21 chương (thì, bị động, động từ khuyết thiếu, câu hỏi, mạo từ, giới từ, cụm động từ…).
@@ -37,7 +37,10 @@ npm run preview
 ```
 src/
 ├─ data/
-│  ├─ vocabulary.js        # 600 từ (30 unit)
+│  ├─ vocabulary.js        # Book 1 (600 từ)
+│  ├─ vocab/
+│  │  ├─ index.js          # danh sách cuốn, loader tải từng cuốn, maskWord
+│  │  └─ book2.js … book6.js # Book 2–6, mỗi cuốn tách 3 file × 10 unit
 │  └─ grammar/
 │     ├─ index.js          # mục lục 115 chủ điểm + loader tải theo chương
 │     └─ present.js …      # 21 file nội dung, mỗi file = 1 chương (code-splitting)
@@ -66,5 +69,6 @@ Bài điền từ chấp nhận mọi đáp án trong `answers`, không phân bi
 
 ## Ghi chú về dữ liệu
 
-- **Từ vựng** được trích tự động từ file PDF bằng OCR; một số ít định nghĩa/ví dụ có thể còn sai sót nhỏ — chỉnh trong `src/data/vocabulary.js`.
+- **Từ vựng Book 1** được trích tự động từ file PDF bằng OCR; một số ít định nghĩa/ví dụ có thể còn sai sót nhỏ — chỉnh trong `src/data/vocabulary.js`.
+- **Từ vựng Book 2–6**: danh sách từ và cách chia unit lấy từ sách (đã đối chiếu với trang định nghĩa); phần định nghĩa và câu ví dụ được **biên soạn riêng**, không chép từ sách. Định dạng gọn: `[word, pos, definition, example]`.
 - **Ngữ pháp** chỉ dùng **danh sách chủ điểm** của sách làm khung; toàn bộ phần giải thích, ví dụ và bài tập được **biên soạn riêng**, không sao chép nội dung sách.

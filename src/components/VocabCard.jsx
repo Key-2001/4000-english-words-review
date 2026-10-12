@@ -1,6 +1,6 @@
 import { speak, speechSupported } from '../utils/speech';
 
-const posLabel = {
+export const posLabel = {
   n: 'danh từ',
   v: 'động từ',
   adj: 'tính từ',
@@ -8,10 +8,13 @@ const posLabel = {
   prep: 'giới từ',
   pron: 'đại từ',
   conj: 'liên từ',
+  aux: 'trợ động từ',
+  int: 'thán từ',
+  abbr: 'viết tắt',
 };
 
 // Thẻ từ vựng: hiển thị từ, loại từ, định nghĩa, ví dụ; nút phát âm và đánh dấu đã thuộc.
-export default function VocabCard({ item, learned, onToggle }) {
+export default function VocabCard({ item, learned, onToggle, showSource = false }) {
   return (
     <article className={'card' + (learned ? ' card--learned' : '')}>
       <div className="card__head">
@@ -40,6 +43,11 @@ export default function VocabCard({ item, learned, onToggle }) {
           </button>
         </div>
       </div>
+      {showSource && (
+        <span className="card__source">
+          Book {item.book} · Unit {item.unit}
+        </span>
+      )}
       <p className="card__def">{item.definition}</p>
       {item.example && <p className="card__example">“{item.example}”</p>}
     </article>

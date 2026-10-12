@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { totalWords } from '../data/vocabulary';
+import { totalWordsAll } from '../data/vocab';
 
 const links = [
   { to: '/', label: 'Trang chủ', end: true },
@@ -30,7 +30,7 @@ export default function Navbar({ learnedCount }) {
           ))}
         </nav>
         <div className="nav__progress" title="Số từ đã đánh dấu thuộc">
-          ✅ {learnedCount}/{totalWords}
+          ✅ {learnedCount}/{totalWordsAll}
         </div>
       </div>
     </header>

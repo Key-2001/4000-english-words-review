@@ -26,7 +26,7 @@ export default function App() {
         </Routes>
       </main>
       <footer className="footer">
-        Từ vựng: <strong>4000 Essential English Words – Book 1</strong> (Paul Nation). Chủ điểm ngữ pháp theo
+        Từ vựng: danh sách từ theo bộ <strong>4000 Essential English Words, Book 1–6</strong> (Paul Nation; định nghĩa và ví dụ Book 2–6 được biên soạn riêng). Chủ điểm ngữ pháp theo
         giáo trình <strong>Essential Grammar in Use</strong> (Raymond Murphy) — phần giải thích và bài tập được
         biên soạn riêng. Ứng dụng ôn tập cá nhân · dữ liệu tĩnh.
       </footer>
