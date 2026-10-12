@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 
 const KEY = 'fw4000-progress-v1';
+const EMPTY = { learned: {}, quizzes: [], grammar: {} };
 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { learned: {}, quizzes: [] };
+    if (!raw) return EMPTY;
     const parsed = JSON.parse(raw);
-    return { learned: parsed.learned || {}, quizzes: parsed.quizzes || [] };
+    return {
+      learned: parsed.learned || {},
+      quizzes: parsed.quizzes || [],
+      grammar: parsed.grammar || {}, // tương thích dữ liệu cũ chưa có phần ngữ pháp
+    };
   } catch {
-    return { learned: {}, quizzes: [] };
+    return EMPTY;
   }
 }
 
@@ -21,7 +26,7 @@ function save(state) {
   }
 }
 
-// Hook quản lý tiến độ học: từ đã thuộc + lịch sử làm bài, lưu trong localStorage.
+// Hook quản lý tiến độ học: từ đã thuộc, kết quả ngữ pháp và lịch sử làm bài, lưu trong localStorage.
 export function useProgress() {
   const [state, setState] = useState(load);
 
@@ -47,16 +52,41 @@ export function useProgress() {
     }));
   }, []);
 
+  // Lưu kết quả bài tập của một chủ điểm ngữ pháp, giữ lại điểm cao nhất.
+  const saveGrammarResult = useCallback((unitId, score, total) => {
+    setState((s) => {
+      const prev = s.grammar[unitId];
+      const better = !prev || score / total > prev.best / prev.total;
+      return {
+        ...s,
+        grammar: {
+          ...s.grammar,
+          [unitId]: {
+            best: better ? score : prev.best,
+            total: better ? total : prev.total,
+            attempts: (prev?.attempts || 0) + 1,
+            at: Date.now(),
+          },
+        },
+      };
+    });
+  }, []);
+
+  const getGrammarResult = useCallback((unitId) => state.grammar[unitId] || null, [state.grammar]);
+
   const resetProgress = useCallback(() => {
-    setState({ learned: {}, quizzes: [] });
+    setState(EMPTY);
   }, []);
 
   return {
     learnedCount: Object.keys(state.learned).length,
+    grammarDoneCount: Object.keys(state.grammar).length,
     quizzes: state.quizzes,
     isLearned,
     toggleLearned,
     addQuizResult,
+    saveGrammarResult,
+    getGrammarResult,
     resetProgress,
   };
 }

@@ -6,6 +6,7 @@ const links = [
   { to: '/vocabulary', label: 'Từ vựng' },
   { to: '/flashcards', label: 'Flashcard' },
   { to: '/practice', label: 'Bài tập' },
+  { to: '/grammar', label: 'Ngữ pháp' },
 ];
 
 export default function Navbar({ learnedCount }) {
@@ -13,8 +14,8 @@ export default function Navbar({ learnedCount }) {
     <header className="navbar">
       <div className="navbar__inner">
         <NavLink to="/" className="brand">
-          <span className="brand__badge">4000</span>
-          <span className="brand__text">English Words · Book 1</span>
+          <span className="brand__badge">EN</span>
+          <span className="brand__text">Từ vựng & Ngữ pháp</span>
         </NavLink>
         <nav className="nav">
           {links.map((l) => (

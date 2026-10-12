@@ -1,37 +1,40 @@
 import { Link } from 'react-router-dom';
 import { totalUnits, totalWords } from '../data/vocabulary';
+import { totalGrammarUnits } from '../data/grammar';
 
 export default function HomePage({ progress }) {
-  const { learnedCount, quizzes, resetProgress } = progress;
+  const { learnedCount, grammarDoneCount, quizzes, resetProgress } = progress;
   const pct = Math.round((learnedCount / totalWords) * 100);
+  const grammarPct = Math.round((grammarDoneCount / totalGrammarUnits) * 100);
   const lastQuiz = quizzes[0];
 
   return (
     <div className="home">
       <section className="hero">
-        <h1 className="hero__title">Ôn tập 4000 English Words</h1>
+        <h1 className="hero__title">Ôn tập tiếng Anh</h1>
         <p className="hero__sub">
-          {totalWords} từ vựng thiết yếu · {totalUnits} unit · học từ vựng và luyện bài tập ngay
-          trên trình duyệt, không cần mạng.
+          {totalWords} từ vựng thiết yếu ({totalUnits} unit) và {totalGrammarUnits} chủ điểm ngữ pháp cơ bản — học
+          lý thuyết, luyện bài tập ngay trên trình duyệt.
         </p>
         <div className="hero__cta">
-          <Link className="btn btn--primary" to="/vocabulary">Bắt đầu học từ vựng</Link>
+          <Link className="btn btn--primary" to="/vocabulary">Học từ vựng</Link>
+          <Link className="btn btn--primary" to="/grammar">Học ngữ pháp</Link>
           <Link className="btn" to="/practice">Làm bài tập</Link>
         </div>
       </section>
 
       <section className="stats">
         <div className="stat">
-          <div className="stat__num">{totalWords}</div>
-          <div className="stat__label">Tổng số từ</div>
-        </div>
-        <div className="stat">
           <div className="stat__num">{learnedCount}</div>
-          <div className="stat__label">Từ đã thuộc</div>
+          <div className="stat__label">Từ đã thuộc / {totalWords}</div>
         </div>
         <div className="stat">
           <div className="stat__num">{pct}%</div>
-          <div className="stat__label">Hoàn thành</div>
+          <div className="stat__label">Từ vựng hoàn thành</div>
+        </div>
+        <div className="stat">
+          <div className="stat__num">{grammarDoneCount}</div>
+          <div className="stat__label">Chủ điểm ngữ pháp đã làm / {totalGrammarUnits}</div>
         </div>
         <div className="stat">
           <div className="stat__num">{quizzes.length}</div>
@@ -39,8 +42,19 @@ export default function HomePage({ progress }) {
         </div>
       </section>
 
-      <div className="progress-bar" aria-label={`Đã thuộc ${pct}%`}>
-        <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+      <div className="progress-pair">
+        <div>
+          <span className="muted">Từ vựng · {pct}%</span>
+          <div className="progress-bar progress-bar--sm" aria-label={`Từ vựng ${pct}%`}>
+            <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        <div>
+          <span className="muted">Ngữ pháp · {grammarPct}%</span>
+          <div className="progress-bar progress-bar--sm" aria-label={`Ngữ pháp ${grammarPct}%`}>
+            <div className="progress-bar__fill" style={{ width: `${grammarPct}%` }} />
+          </div>
+        </div>
       </div>
 
       <section className="feature-grid">
@@ -56,8 +70,13 @@ export default function HomePage({ progress }) {
         </Link>
         <Link to="/practice" className="feature">
           <div className="feature__icon">📝</div>
-          <h3>Bài tập</h3>
+          <h3>Bài tập từ vựng</h3>
           <p>Trắc nghiệm nghĩa, chọn từ theo định nghĩa, điền từ và nghe – chọn.</p>
+        </Link>
+        <Link to="/grammar" className="feature">
+          <div className="feature__icon">📐</div>
+          <h3>Ngữ pháp</h3>
+          <p>{totalGrammarUnits} chủ điểm: giải thích tiếng Việt, bảng cấu trúc, ví dụ, lỗi thường gặp và bài tập chấm tự động.</p>
         </Link>
       </section>
 
@@ -71,7 +90,7 @@ export default function HomePage({ progress }) {
         </section>
       )}
 
-      {(learnedCount > 0 || quizzes.length > 0) && (
+      {(learnedCount > 0 || quizzes.length > 0 || grammarDoneCount > 0) && (
         <button className="btn btn--ghost" onClick={resetProgress}>
           Xoá toàn bộ tiến độ
         </button>
