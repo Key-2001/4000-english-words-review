@@ -1,5 +1,5 @@
 // Bộ từ vựng 4000 Essential English Words, Book 1–6 (mỗi cuốn 30 unit × 20 từ).
-// Danh sách từ và cách chia unit theo sách. Book 2–6: định nghĩa và câu ví dụ được biên soạn riêng.
+// Danh sách từ và cách chia unit theo sách; định nghĩa và câu ví dụ được biên soạn riêng.
 // Mỗi cuốn là một chunk riêng, chỉ tải khi cần.
 
 export const books = [1, 2, 3, 4, 5, 6].map((id) => ({
@@ -12,7 +12,7 @@ export const books = [1, 2, 3, 4, 5, 6].map((id) => ({
 export const totalWordsAll = books.reduce((s, b) => s + b.words, 0);
 
 const loaders = {
-  1: () => import('../vocabulary.js').then((m) => m.units.map((u) => ({ ...u, words: u.words.map((w) => ({ ...w, unit: u.unit, book: 1 })) }))),
+  1: () => import('./book1.js').then((m) => fromCompact(1, m.default)),
   2: () => import('./book2.js').then((m) => fromCompact(2, m.default)),
   3: () => import('./book3.js').then((m) => fromCompact(3, m.default)),
   4: () => import('./book4.js').then((m) => fromCompact(4, m.default)),
@@ -25,7 +25,8 @@ function fromCompact(book, units) {
   return units.map((list, i) => ({
     unit: i + 1,
     words: list.map(([word, pos, definition, example]) => ({
-      id: `b${book}-u${i + 1}-${word.replace(/\s+/g, '_')}`,
+      // Book 1 giữ định dạng id cũ (u1-afraid) để không mất tiến độ “đã thuộc” đã lưu.
+      id: `${book === 1 ? '' : `b${book}-`}u${i + 1}-${word.replace(/\s+/g, '_')}`,
       word,
       pos,
       definition,

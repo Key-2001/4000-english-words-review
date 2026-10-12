@@ -37,10 +37,9 @@ npm run preview
 ```
 src/
 ├─ data/
-│  ├─ vocabulary.js        # Book 1 (600 từ)
 │  ├─ vocab/
 │  │  ├─ index.js          # danh sách cuốn, loader tải từng cuốn, maskWord
-│  │  └─ book2.js … book6.js # Book 2–6, mỗi cuốn tách 3 file × 10 unit
+│  │  └─ book1.js … book6.js # 6 cuốn, mỗi cuốn tách 3 file × 10 unit
 │  └─ grammar/
 │     ├─ index.js          # mục lục 115 chủ điểm + loader tải theo chương
 │     └─ present.js …      # 21 file nội dung, mỗi file = 1 chương (code-splitting)
@@ -69,6 +68,5 @@ Bài điền từ chấp nhận mọi đáp án trong `answers`, không phân bi
 
 ## Ghi chú về dữ liệu
 
-- **Từ vựng Book 1** được trích tự động từ file PDF bằng OCR; một số ít định nghĩa/ví dụ có thể còn sai sót nhỏ — chỉnh trong `src/data/vocabulary.js`.
-- **Từ vựng Book 2–6**: danh sách từ và cách chia unit lấy từ sách (đã đối chiếu với trang định nghĩa); phần định nghĩa và câu ví dụ được **biên soạn riêng**, không chép từ sách. Định dạng gọn: `[word, pos, definition, example]`.
+- **Từ vựng Book 1–6**: danh sách từ và cách chia unit lấy từ sách (đã đối chiếu với trang định nghĩa); phần định nghĩa và câu ví dụ được **biên soạn riêng**, không chép từ sách. Định dạng gọn: `[word, pos, definition, example]`.
 - **Ngữ pháp** chỉ dùng **danh sách chủ điểm** của sách làm khung; toàn bộ phần giải thích, ví dụ và bài tập được **biên soạn riêng**, không sao chép nội dung sách.
