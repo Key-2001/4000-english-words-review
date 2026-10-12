@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { maskWord } from '../data/vocab';
 import { useBook, useSelectedBook } from '../hooks/useBook';
 import BookPicker from '../components/BookPicker';
@@ -43,6 +43,29 @@ export default function FlashcardPage({ progress }) {
     setIdx((i) => (i + delta + order.length) % order.length);
   };
 
+  // Vuốt ngang trên điện thoại để chuyển thẻ; chạm để lật.
+  const touch = useRef({ x: 0, y: 0, swiped: false });
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touch.current = { x: t.clientX, y: t.clientY, swiped: false };
+  };
+  const onTouchEnd = (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch.current.x;
+    const dy = t.clientY - touch.current.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      touch.current.swiped = true;
+      go(dx < 0 ? 1 : -1);
+    }
+  };
+  const onCardClick = () => {
+    if (touch.current.swiped) {
+      touch.current.swiped = false;
+      return;
+    }
+    setFlipped((f) => !f);
+  };
+
   return (
     <div className="page">
       <div className="page__head">
@@ -83,7 +106,9 @@ export default function FlashcardPage({ progress }) {
 
             <div
               className={'flash' + (flipped ? ' is-flipped' : '')}
-              onClick={() => setFlipped((f) => !f)}
+              onClick={onCardClick}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -102,7 +127,7 @@ export default function FlashcardPage({ progress }) {
                   ) : (
                     <span className="flash__def">{maskWord(current.definition, current.word)}</span>
                   )}
-                  <span className="flash__hint">Nhấn để lật</span>
+                  <span className="flash__hint">Chạm để lật · vuốt để chuyển thẻ</span>
                 </div>
                 <div className="flash__face flash__back">
                   {frontIsWord ? (
@@ -123,6 +148,9 @@ export default function FlashcardPage({ progress }) {
           </div>
 
           <div className="flash-actions">
+            <button className="btn" onClick={() => go(-1)} aria-label="Thẻ trước">
+              ‹ Trước
+            </button>
             {speechSupported && (
               <button className="btn" onClick={() => speak(current.word)}>
                 🔊 Nghe
@@ -132,10 +160,10 @@ export default function FlashcardPage({ progress }) {
               className={'btn' + (isLearned(current.id) ? ' btn--primary' : '')}
               onClick={() => toggleLearned(current.id)}
             >
-              {isLearned(current.id) ? '✅ Đã thuộc' : '⭐ Đánh dấu thuộc'}
+              {isLearned(current.id) ? '✅ Đã thuộc' : '⭐ Thuộc'}
             </button>
-            <button className="btn" onClick={() => go(1)}>
-              Thẻ tiếp theo →
+            <button className="btn" onClick={() => go(1)} aria-label="Thẻ sau">
+              Sau ›
             </button>
           </div>
         </>

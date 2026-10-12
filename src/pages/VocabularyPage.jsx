@@ -3,6 +3,7 @@ import { loadAllBooks, totalWordsAll } from '../data/vocab';
 import { useBook, useSelectedBook } from '../hooks/useBook';
 import VocabCard from '../components/VocabCard';
 import BookPicker from '../components/BookPicker';
+import UnitTabs from '../components/UnitTabs';
 
 export default function VocabularyPage({ progress }) {
   const { isLearned, toggleLearned } = progress;
@@ -66,19 +67,7 @@ export default function VocabularyPage({ progress }) {
       {!q && (
         <>
           <BookPicker value={book} onChange={changeBook} />
-          {units && (
-            <div className="unit-tabs">
-              {units.map((u) => (
-                <button
-                  key={u.unit}
-                  className={'unit-tab' + (u.unit === unit ? ' is-active' : '')}
-                  onClick={() => setUnit(u.unit)}
-                >
-                  {u.unit}
-                </button>
-              ))}
-            </div>
-          )}
+          {units && <UnitTabs units={units} value={unit} onChange={setUnit} />}
         </>
       )}
 

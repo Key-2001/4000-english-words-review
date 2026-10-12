@@ -326,18 +326,142 @@ body {
   .g-unit__score.ok, .ws-score.ok { background: #33270f; color: #fbbf24; }
 }
 
-@media (max-width: 640px) {
+/* ===== Thanh tab dưới đáy (chỉ hiện trên mobile) ===== */
+.tabbar { display: none; }
+.unit-tabs { position: relative; }
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+button, .btn, .tabbar__item { touch-action: manipulation; }
+
+/* Trên thiết bị cảm ứng, bỏ hiệu ứng “nhấc lên” khi hover (bị dính sau khi chạm). */
+@media (hover: none) {
+  .feature:hover, .g-unit:hover { transform: none; }
+}
+
+/* ===== Tablet ===== */
+@media (max-width: 900px) {
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .feature-grid { grid-template-columns: 1fr; }
-  .progress-pair { grid-template-columns: 1fr; }
-  .nav__progress { display: none; }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  :root { --tabbar-h: 60px; }
+
+  /* Khung trang: chừa chỗ cho thanh tab + vùng an toàn của iPhone */
+  .container { padding: 16px 14px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 24px); }
+  .footer { padding: 16px 14px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px); font-size: 12px; }
+
+  /* Thanh trên: chỉ còn logo + tiến độ; menu chuyển xuống thanh tab */
+  .navbar__inner { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .nav { display: none; }
+  .nav__progress { margin-left: auto; font-weight: 600; }
+
+  .tabbar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+  }
+  .tabbar__item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    text-decoration: none; color: var(--muted); font-size: 11px; font-weight: 600;
+  }
+  .tabbar__icon { font-size: 20px; line-height: 1; filter: grayscale(1); opacity: .65; transition: .15s; }
+  .tabbar__item.is-active { color: var(--primary); }
+  .tabbar__item.is-active .tabbar__icon { filter: none; opacity: 1; transform: translateY(-1px); }
+
+  /* iOS tự phóng to khi chạm vào ô nhập có chữ < 16px → đặt tối thiểu 16px */
+  .input, select.input, .ws-input, input[type='search'] { font-size: 16px; }
+
+  /* Tiêu đề trang */
+  .page__head h2 { font-size: 22px; }
+
+  /* Trang chủ */
+  .hero { padding: 8px 0 4px; }
+  .hero__title { font-size: 28px; }
+  .hero__sub { font-size: 14.5px; margin-bottom: 16px; }
+  .hero__cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero__cta .btn { justify-content: center; }
+  .hero__cta .btn:last-child { grid-column: 1 / -1; }
+  .stats { gap: 10px; margin: 20px 0 12px; }
+  .stat { padding: 14px 10px; }
+  .stat__num { font-size: 26px; }
+  .stat__label { font-size: 12px; }
+  .progress-pair { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+  .feature-grid { grid-template-columns: 1fr; gap: 10px; }
+  .feature { display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; align-items: center; padding: 14px 16px; }
+  .feature__icon { font-size: 26px; grid-row: span 2; text-align: center; }
+  .feature h3 { margin: 0; font-size: 16px; }
+  .feature p { font-size: 13px; }
+
+  /* Bộ chọn Book: 6 ô bằng nhau trên một hàng */
+  .book-picker { display: grid; grid-template-columns: repeat(6, 1fr); width: 100%; gap: 2px; }
+  .book-tab { padding: 9px 0; font-size: 12.5px; }
+
+  /* Unit, chip chủ đề: một hàng vuốt ngang thay vì nhiều hàng */
+  .unit-tabs, .chips {
+    flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity;
+    margin-left: -14px; margin-right: -14px; padding: 2px 14px 6px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .unit-tabs::-webkit-scrollbar, .chips::-webkit-scrollbar { display: none; }
+  .unit-tab, .chip { flex: none; scroll-snap-align: center; }
+  .unit-tab { width: 42px; height: 42px; }
+  .chip { white-space: nowrap; padding: 8px 14px; }
+  .chips { margin-bottom: 16px; }
+
+  /* Thanh công cụ: ô tìm kiếm full width */
+  .toolbar { gap: 10px; }
+  .toolbar .input[type='search'] { min-width: 0; width: 100%; flex-basis: 100%; }
+
+  /* Thẻ từ vựng */
+  .card-grid { grid-template-columns: 1fr; gap: 10px; }
+  .card { padding: 14px 16px; }
+  .icon-btn { width: 38px; height: 38px; }
+
+  /* Flashcard: thẻ full chiều ngang, ẩn mũi tên hai bên (dùng nút bên dưới hoặc vuốt) */
+  .flash-nav { display: none; }
+  .flash-wrap { margin: 6px 0; }
+  .flash { width: 100%; height: 300px; }
+  .flash__word { font-size: 32px; }
+  .flash__def { font-size: 17px; }
+  .flash-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .flash-actions .btn { justify-content: center; padding: 11px 4px; font-size: 13px; }
+
+  /* Thiết lập bài tập: lưới 2 cột, nút bắt đầu full width */
+  .setup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .setup .input { width: 100%; min-width: 0; }
+  .mode-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mode-card { padding: 12px; }
+  .mode-card strong { font-size: 14px; }
+  .mode-card span { font-size: 12px; }
+  .page > .btn--lg { width: 100%; justify-content: center; }
+  .grammar-head .btn { width: 100%; justify-content: center; }
+
+  /* Làm bài trắc nghiệm */
+  .quiz-card { padding: 20px 16px; }
+  .quiz-prompt { font-size: 21px; }
+  .option { min-height: 50px; font-size: 15px; }
+  .input--lg { max-width: 100%; }
+  .quiz-actions .btn { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+
+  /* Kết quả */
+  .result__ring { width: 110px; height: 110px; font-size: 26px; }
   .review__row { grid-template-columns: 20px 1fr; }
   .review__def { grid-column: 2; }
+
+  /* Ngữ pháp */
+  .g-unit-grid { grid-template-columns: 1fr; }
+  .g-group__title { font-size: 16px; }
+  .lesson__intro { padding: 12px 14px; font-size: 15px; }
+  .g-table { font-size: 13.5px; }
+  .g-table th, .g-table td { padding: 8px 10px; }
+  .ws-item { padding: 12px 14px; }
   .ws-options, .ws-feedback { margin-left: 0; }
+  .ws-opt { min-height: 42px; padding: 8px 14px; font-size: 15px; }
+  .ws-actions { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+  .lesson__nav { display: grid; grid-template-columns: 1fr 1fr; }
   .lesson__navlink { max-width: 100%; }
-  .brand__text { display: none; }
-  .navbar__inner { gap: 10px; }
-  .nav { flex-wrap: nowrap; overflow-x: auto; margin-left: 0; scrollbar-width: none; }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav__link { white-space: nowrap; padding: 8px 10px; }
 }
