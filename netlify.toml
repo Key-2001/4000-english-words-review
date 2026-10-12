@@ -1,0 +1,11 @@
+# Cấu hình deploy Netlify cho app React + Vite (SPA)
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# React Router dùng client-side routing: mọi đường dẫn trả về index.html
+# để các trang như /vocabulary, /practice không bị lỗi 404 khi tải trực tiếp.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
