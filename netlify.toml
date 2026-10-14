@@ -9,3 +9,13 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Service worker và manifest luôn lấy bản mới để app tự cập nhật sau mỗi lần deploy.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"

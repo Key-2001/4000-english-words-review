@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.2" r="0.8">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pageL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6e4ff"/>
+    </linearGradient>
+    <linearGradient id="pageR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e6e4ff"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Nền tràn viền: iOS tự bo góc -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <g transform="translate(512 512) scale(1.14) translate(-512 -469)">
+  <!-- Bóng sách -->
+  <path d="M152 742 Q332 690 512 760 Q692 690 872 742 L872 780 Q692 728 512 798 Q332 728 152 780 Z" fill="#000" opacity="0.18"/>
+
+  <!-- Sách mở -->
+  <path d="M152 420 Q332 368 512 440 L512 760 Q332 690 152 742 Z" fill="url(#pageL)"/>
+  <path d="M872 420 Q692 368 512 440 L512 760 Q692 690 872 742 Z" fill="url(#pageR)"/>
+  <path d="M512 440 L512 760" stroke="#c7c3f5" stroke-width="6"/>
+
+  <!-- Dòng chữ trên trang -->
+  <g stroke="#b9b4f0" stroke-width="16" stroke-linecap="round" fill="none">
+    <path d="M222 520 Q332 492 442 530"/>
+    <path d="M222 590 Q332 562 442 600"/>
+    <path d="M222 660 Q312 636 392 660"/>
+    <path d="M582 530 Q692 492 802 520"/>
+    <path d="M582 600 Q692 562 802 590"/>
+    <path d="M632 660 Q712 636 802 660"/>
+  </g>
+
+  <!-- Bong bóng "Aa" -->
+  <g>
+    <rect x="322" y="150" width="380" height="230" rx="70" fill="#ffffff"/>
+    <path d="M470 372 L512 430 L554 372 Z" fill="#ffffff"/>
+    <text x="512" y="322" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+          font-size="168" font-weight="800" fill="#4f46e5" letter-spacing="-4">Aa</text>
+  </g>
+
+  <!-- Ngôi sao "đã thuộc" -->
+  <path transform="translate(752 214) rotate(12)"
+        d="M0 -74 L21 -24 L74 -22 L32 12 L46 66 L0 36 L-46 66 L-32 12 L-74 -22 L-21 -24 Z"
+        fill="#fbbf24" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+  </g>
+</svg>
