@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { totalWordsAll } from '../data/vocab';
+import VoiceSettings from './VoiceSettings';
 
 const links = [
   { to: '/', label: 'Trang chủ', short: 'Trang chủ', icon: '🏠', end: true },
@@ -13,6 +15,7 @@ const linkClass = (base) => ({ isActive }) => base + (isActive ? ' is-active' : 
 
 // Desktop: menu ở thanh trên. Mobile: thanh tab cố định dưới đáy màn hình.
 export default function Navbar({ learnedCount }) {
+  const [voiceOpen, setVoiceOpen] = useState(false);
   return (
     <>
       <header className="navbar">
@@ -31,6 +34,9 @@ export default function Navbar({ learnedCount }) {
           <div className="nav__progress" title="Số từ đã đánh dấu thuộc">
             ✅ {learnedCount}/{totalWordsAll}
           </div>
+          <button className="icon-btn" onClick={() => setVoiceOpen(true)} title="Giọng đọc" aria-label="Cài đặt giọng đọc">
+            🔊
+          </button>
         </div>
       </header>
 
@@ -44,6 +50,8 @@ export default function Navbar({ learnedCount }) {
           </NavLink>
         ))}
       </nav>
+
+      {voiceOpen && <VoiceSettings onClose={() => setVoiceOpen(false)} />}
     </>
   );
 }
