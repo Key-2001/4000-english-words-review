@@ -5,6 +5,8 @@ import BookPicker from '../components/BookPicker';
 import { speak, speechSupported } from '../utils/speech';
 
 const MODES = [
+  { id: 'word2vi', label: 'Nghĩa tiếng Việt', desc: 'Cho từ → chọn nghĩa Việt' },
+  { id: 'vi2word', label: 'Việt → Anh', desc: 'Cho nghĩa Việt → gõ từ' },
   { id: 'word2def', label: 'Chọn nghĩa đúng', desc: 'Cho từ → chọn định nghĩa' },
   { id: 'def2word', label: 'Chọn từ đúng', desc: 'Cho định nghĩa → chọn từ' },
   { id: 'fill', label: 'Điền từ', desc: 'Cho nghĩa → gõ lại từ' },
@@ -24,8 +26,12 @@ function shuffle(arr) {
 function buildQuestions(pool, bookWords, mode, count) {
   const picked = shuffle(pool).slice(0, count);
   return picked.map((w) => {
-    const distractors = shuffle(bookWords.filter((x) => x.id !== w.id && x.word !== w.word)).slice(0, 3);
-    return { word: w, options: shuffle([w, ...distractors]) };
+    const distractors = shuffle(
+      bookWords.filter((x) => x.id !== w.id && x.word !== w.word && (mode !== 'word2vi' || (x.vi && x.vi !== w.vi)))
+    ).slice(0, 3);
+    // Việt → Anh: chấp nhận mọi từ trong cuốn có cùng nghĩa tiếng Việt (từ đồng nghĩa).
+    const accept = mode === 'vi2word' ? bookWords.filter((x) => x.vi === w.vi).map((x) => normalize(x.word)) : [];
+    return { word: w, options: shuffle([w, ...distractors]), accept };
   });
 }
 
@@ -36,7 +42,7 @@ export default function PracticePage({ progress }) {
   const [book, setBook] = useSelectedBook();
   const { units, loading } = useBook(book);
   const [scope, setScope] = useState('1'); // số unit hoặc 'all' (cả cuốn)
-  const [mode, setMode] = useState('word2def');
+  const [mode, setMode] = useState('word2vi');
   const [count, setCount] = useState(10);
   const [quiz, setQuiz] = useState(null);
 
@@ -133,17 +139,25 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
   const [checked, setChecked] = useState(false);
 
   const q = quiz.questions[quiz.current];
-  const isFill = quiz.mode === 'fill';
+  const isFill = quiz.mode === 'fill' || quiz.mode === 'vi2word';
   const total = quiz.questions.length;
 
   // Khi đề bài là định nghĩa, che từ cần đoán để không lộ đáp án.
   const promptText =
-    quiz.mode === 'word2def' ? q.word.word : quiz.mode === 'listen' ? '🔊' : maskWord(q.word.definition, q.word.word);
+    quiz.mode === 'word2def' || quiz.mode === 'word2vi'
+      ? q.word.word
+      : quiz.mode === 'vi2word'
+        ? q.word.vi
+        : quiz.mode === 'listen'
+          ? '🔊'
+          : maskWord(q.word.definition, q.word.word);
 
-  const optionText = (o) => (quiz.mode === 'word2def' ? o.definition : o.word);
+  const optionText = (o) => (quiz.mode === 'word2def' ? o.definition : quiz.mode === 'word2vi' ? o.vi : o.word);
 
   const submit = () => {
-    const correct = isFill ? normalize(typed) === normalize(q.word.word) : selected && selected.id === q.word.id;
+    const correct = isFill
+      ? normalize(typed) === normalize(q.word.word) || q.accept.includes(normalize(typed))
+      : selected && selected.id === q.word.id;
     setChecked(true);
     setQuiz((s) => ({ ...s, answers: [...s.answers, { word: q.word, correct, given: isFill ? typed : selected }] }));
   };
@@ -180,7 +194,10 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
               <div key={i} className={'review__row ' + (a.correct ? 'ok' : 'bad')}>
                 <span className="review__mark">{a.correct ? '✓' : '✗'}</span>
                 <span className="review__word">{a.word.word}</span>
-                <span className="review__def">{a.word.definition}</span>
+                <span className="review__def">
+                  {a.word.vi && <span className="review__vi">{a.word.vi} · </span>}
+                  {a.word.definition}
+                </span>
               </div>
             ))}
           </div>
@@ -212,6 +229,8 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
 
       <div className="quiz-card">
         <p className="quiz-label">
+          {quiz.mode === 'word2vi' && 'Chọn nghĩa tiếng Việt đúng của từ:'}
+          {quiz.mode === 'vi2word' && 'Gõ từ tiếng Anh có nghĩa là:'}
           {quiz.mode === 'word2def' && 'Chọn định nghĩa đúng cho từ:'}
           {quiz.mode === 'def2word' && 'Từ nào khớp với định nghĩa này?'}
           {quiz.mode === 'fill' && 'Gõ lại từ tiếng Anh theo nghĩa:'}
@@ -233,7 +252,9 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
               if (!checked && canSubmit) submit();
             }}
           >
-            {q.word.example && <p className="quiz-hint">Ví dụ: “{maskWord(q.word.example, q.word.word)}”</p>}
+            {q.word.example && quiz.mode === 'fill' && (
+              <p className="quiz-hint">Ví dụ: “{maskWord(q.word.example, q.word.word)}”</p>
+            )}
             <input
               className="input input--lg"
               autoFocus
@@ -268,6 +289,12 @@ function QuizRunner({ quiz, setQuiz, onDone, onExit }) {
               );
             })}
           </div>
+        )}
+
+        {checked && q.word.vi && (
+          <p className="quiz-meaning" lang="vi">
+            <strong>{q.word.word}</strong> = {q.word.vi}
+          </p>
         )}
 
         <div className="quiz-actions">

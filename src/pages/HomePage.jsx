@@ -61,17 +61,17 @@ export default function HomePage({ progress }) {
         <Link to="/vocabulary" className="feature">
           <div className="feature__icon">📚</div>
           <h3>Từ vựng</h3>
-          <p>6 cuốn 4000 Essential English Words: duyệt theo unit, tìm kiếm, nghe phát âm, đánh dấu từ đã thuộc.</p>
+          <p>6 cuốn 4000 Essential English Words, có nghĩa tiếng Việt: duyệt theo unit, tìm kiếm, nghe phát âm, đánh dấu từ đã thuộc.</p>
         </Link>
         <Link to="/flashcards" className="feature">
           <div className="feature__icon">🔁</div>
           <h3>Flashcard</h3>
-          <p>Lật thẻ để tự kiểm tra: nhìn từ đoán nghĩa hoặc ngược lại.</p>
+          <p>Lật thẻ để tự kiểm tra: Anh → Việt, Việt → Anh hoặc theo định nghĩa.</p>
         </Link>
         <Link to="/practice" className="feature">
           <div className="feature__icon">📝</div>
           <h3>Bài tập từ vựng</h3>
-          <p>Trắc nghiệm nghĩa, chọn từ theo định nghĩa, điền từ và nghe – chọn.</p>
+          <p>6 dạng: chọn nghĩa Việt, Việt → Anh, chọn định nghĩa, chọn từ, điền từ, nghe – chọn.</p>
         </Link>
         <Link to="/grammar" className="feature">
           <div className="feature__icon">📐</div>

@@ -219,6 +219,18 @@ body {
 .card__source { display: inline-block; font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 6px; }
 .quiz-hint { color: var(--muted); font-style: italic; margin: 0 0 14px; }
 
+/* ===== Nghĩa tiếng Việt ===== */
+.card__vi { margin: 8px 0 0; font-weight: 700; color: var(--ok); font-size: 15.5px; }
+.card__vi-reveal { margin-top: 8px; border: 1px dashed var(--border); background: transparent; color: var(--muted); border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.card__vi-reveal:hover { border-color: var(--primary); color: var(--primary); }
+.card__vi + .card__def { margin-top: 4px; }
+.flash__vi { font-size: 26px; font-weight: 800; line-height: 1.3; }
+.flash__vi-back { margin: 0; font-size: 20px; font-weight: 800; color: var(--ok); }
+.field--inline { flex-direction: row; align-items: center; gap: 8px; }
+.quiz-meaning { margin: 16px auto 0; max-width: 560px; padding: 10px 14px; border-radius: 12px; background: var(--ok-soft); color: var(--text); font-size: 15px; }
+.quiz-meaning strong { color: var(--ok); }
+.review__vi { color: var(--ok); font-weight: 700; }
+
 /* ===== Ngữ pháp ===== */
 .row-gap { display: flex; gap: 10px; flex-wrap: wrap; }
 .grammar-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }

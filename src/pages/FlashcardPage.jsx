@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { maskWord } from '../data/vocab';
 import { useBook, useSelectedBook } from '../hooks/useBook';
+import { usePref } from '../hooks/usePref';
 import BookPicker from '../components/BookPicker';
 import { posLabel } from '../components/VocabCard';
 import { speak, speechSupported } from '../utils/speech';
@@ -22,7 +23,8 @@ export default function FlashcardPage({ progress }) {
   const [order, setOrder] = useState([]);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [frontIsWord, setFrontIsWord] = useState(true);
+  // Mặt trước của thẻ: từ tiếng Anh, nghĩa tiếng Việt, hoặc định nghĩa tiếng Anh.
+  const [front, setFront] = usePref('fw4000-flash-front', 'word');
 
   const words = useMemo(() => units?.find((u) => u.unit === unit)?.words || [], [units, unit]);
 
@@ -89,9 +91,13 @@ export default function FlashcardPage({ progress }) {
         <button className="btn" onClick={() => setOrder(shuffle(order))} disabled={!current}>
           🔀 Xáo trộn
         </button>
-        <label className="check">
-          <input type="checkbox" checked={frontIsWord} onChange={(e) => setFrontIsWord(e.target.checked)} />
-          Mặt trước: từ
+        <label className="field field--inline">
+          <span>Mặt trước</span>
+          <select className="input" value={front} onChange={(e) => setFront(e.target.value)}>
+            <option value="word">Từ tiếng Anh</option>
+            <option value="vi">Nghĩa tiếng Việt</option>
+            <option value="def">Định nghĩa (Anh)</option>
+          </select>
         </label>
       </div>
 
@@ -119,25 +125,29 @@ export default function FlashcardPage({ progress }) {
             >
               <div className="flash__inner">
                 <div className="flash__face flash__front">
-                  {frontIsWord ? (
+                  {front === 'word' && (
                     <>
                       <span className="flash__word">{current.word}</span>
                       {current.pos && <span className="flash__pos">{posLabel[current.pos] || current.pos}</span>}
                     </>
-                  ) : (
-                    <span className="flash__def">{maskWord(current.definition, current.word)}</span>
                   )}
+                  {front === 'vi' && (
+                    <span className="flash__vi" lang="vi">
+                      {current.vi}
+                    </span>
+                  )}
+                  {front === 'def' && <span className="flash__def">{maskWord(current.definition, current.word)}</span>}
                   <span className="flash__hint">Chạm để lật · vuốt để chuyển thẻ</span>
                 </div>
                 <div className="flash__face flash__back">
-                  {frontIsWord ? (
-                    <>
-                      <p className="flash__def">{current.definition}</p>
-                      {current.example && <p className="flash__ex">“{current.example}”</p>}
-                    </>
-                  ) : (
-                    <span className="flash__word">{current.word}</span>
+                  {front !== 'word' && <span className="flash__word">{current.word}</span>}
+                  {front !== 'vi' && current.vi && (
+                    <p className="flash__vi-back" lang="vi">
+                      {current.vi}
+                    </p>
                   )}
+                  {front !== 'def' && <p className="flash__def">{current.definition}</p>}
+                  {current.example && <p className="flash__ex">“{current.example}”</p>}
                 </div>
               </div>
             </div>

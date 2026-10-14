@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { speak, speechSupported } from '../utils/speech';
 
 export const posLabel = {
@@ -14,7 +15,9 @@ export const posLabel = {
 };
 
 // Thẻ từ vựng: hiển thị từ, loại từ, định nghĩa, ví dụ; nút phát âm và đánh dấu đã thuộc.
-export default function VocabCard({ item, learned, onToggle, showSource = false }) {
+export default function VocabCard({ item, learned, onToggle, showSource = false, showVi = true }) {
+  const [revealed, setRevealed] = useState(false);
+  const viVisible = showVi || revealed;
   return (
     <article className={'card' + (learned ? ' card--learned' : '')}>
       <div className="card__head">
@@ -48,6 +51,16 @@ export default function VocabCard({ item, learned, onToggle, showSource = false 
           Book {item.book} · Unit {item.unit}
         </span>
       )}
+      {item.vi &&
+        (viVisible ? (
+          <p className="card__vi" lang="vi">
+            {item.vi}
+          </p>
+        ) : (
+          <button className="card__vi-reveal" onClick={() => setRevealed(true)}>
+            👁 Xem nghĩa tiếng Việt
+          </button>
+        ))}
       <p className="card__def">{item.definition}</p>
       {item.example && <p className="card__example">“{item.example}”</p>}
     </article>

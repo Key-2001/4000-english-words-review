@@ -11,17 +11,19 @@ export const books = [1, 2, 3, 4, 5, 6].map((id) => ({
 
 export const totalWordsAll = books.reduce((s, b) => s + b.words, 0);
 
+// Mỗi cuốn tải song song phần từ vựng và phần nghĩa tiếng Việt.
+const load = (book, words, vi) => Promise.all([words(), vi()]).then(([w, v]) => fromCompact(book, w.default, v.default));
 const loaders = {
-  1: () => import('./book1.js').then((m) => fromCompact(1, m.default)),
-  2: () => import('./book2.js').then((m) => fromCompact(2, m.default)),
-  3: () => import('./book3.js').then((m) => fromCompact(3, m.default)),
-  4: () => import('./book4.js').then((m) => fromCompact(4, m.default)),
-  5: () => import('./book5.js').then((m) => fromCompact(5, m.default)),
-  6: () => import('./book6.js').then((m) => fromCompact(6, m.default)),
+  1: () => load(1, () => import('./book1.js'), () => import('./vi1.js')),
+  2: () => load(2, () => import('./book2.js'), () => import('./vi2.js')),
+  3: () => load(3, () => import('./book3.js'), () => import('./vi3.js')),
+  4: () => load(4, () => import('./book4.js'), () => import('./vi4.js')),
+  5: () => load(5, () => import('./book5.js'), () => import('./vi5.js')),
+  6: () => load(6, () => import('./book6.js'), () => import('./vi6.js')),
 };
 
-// Dạng gọn trong file: [[word, pos, definition, example], ...] cho mỗi unit.
-function fromCompact(book, units) {
+// Dạng gọn trong file: [[word, pos, definition, example], ...] cho mỗi unit; vi = { word: 'nghĩa tiếng Việt' }.
+function fromCompact(book, units, vi = {}) {
   return units.map((list, i) => ({
     unit: i + 1,
     words: list.map(([word, pos, definition, example]) => ({
@@ -31,6 +33,7 @@ function fromCompact(book, units) {
       pos,
       definition,
       example,
+      vi: vi[word] || '',
       unit: i + 1,
       book,
     })),
@@ -63,3 +66,7 @@ export function maskWord(text, word) {
   const re = new RegExp(`\\b${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[a-z]*`, 'gi');
   return text.replace(re, '_____');
 }
+
+// Bỏ dấu tiếng Việt để tìm kiếm “so hai” vẫn ra “sợ hãi”.
+export const fold = (str) =>
+  String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');

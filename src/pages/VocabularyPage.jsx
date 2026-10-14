@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { loadAllBooks, totalWordsAll } from '../data/vocab';
+import { fold, loadAllBooks, totalWordsAll } from '../data/vocab';
+import { usePref } from '../hooks/usePref';
 import { useBook, useSelectedBook } from '../hooks/useBook';
 import VocabCard from '../components/VocabCard';
 import BookPicker from '../components/BookPicker';
@@ -13,8 +14,9 @@ export default function VocabularyPage({ progress }) {
   const [query, setQuery] = useState('');
   const [onlyUnlearned, setOnlyUnlearned] = useState(false);
   const [allWords, setAllWords] = useState(null);
+  const [showVi, setShowVi] = usePref('fw4000-show-vi', true);
 
-  const q = query.trim().toLowerCase();
+  const q = fold(query.trim());
 
   // Chỉ tải toàn bộ 6 cuốn khi người dùng bắt đầu tìm kiếm.
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function VocabularyPage({ progress }) {
   const list = useMemo(() => {
     const base = q ? allWords || [] : units?.find((u) => u.unit === unit)?.words || [];
     return base.filter((w) => {
-      if (q && !(w.word.toLowerCase().includes(q) || w.definition.toLowerCase().includes(q))) return false;
+      if (q && !fold(`${w.word} ${w.vi} ${w.definition}`).includes(q)) return false;
       if (onlyUnlearned && isLearned(w.id)) return false;
       return true;
     });
@@ -54,13 +56,17 @@ export default function VocabularyPage({ progress }) {
         <input
           className="input"
           type="search"
-          placeholder={`Tìm từ hoặc nghĩa (cả 6 cuốn, ${totalWordsAll} từ)…`}
+          placeholder={`Tìm từ, nghĩa Anh hoặc Việt (${totalWordsAll} từ)…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <label className="check">
           <input type="checkbox" checked={onlyUnlearned} onChange={(e) => setOnlyUnlearned(e.target.checked)} />
           Chỉ hiện từ chưa thuộc
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={showVi} onChange={(e) => setShowVi(e.target.checked)} />
+          Hiện nghĩa tiếng Việt
         </label>
       </div>
 
@@ -80,7 +86,14 @@ export default function VocabularyPage({ progress }) {
       ) : (
         <div className="card-grid">
           {list.map((w) => (
-            <VocabCard key={w.id} item={w} learned={isLearned(w.id)} onToggle={toggleLearned} showSource={!!q} />
+            <VocabCard
+              key={`${w.id}-${showVi}`}
+              item={w}
+              learned={isLearned(w.id)}
+              onToggle={toggleLearned}
+              showSource={!!q}
+              showVi={showVi}
+            />
           ))}
         </div>
       )}
